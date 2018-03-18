@@ -9,7 +9,7 @@ Function encapsulate(){
         # create cooke for inject loldirectory automatically
         $cookie = New-Object system.Net.Cookie
         $cookie.Name = 'loldirectory'
-        $cookie.Value = $global:loldirectory
+        $cookie.Value = $global:config.loldirectory
         $cookie.Domain = 'www.op.gg'
         $cookie.Path = '/'
         # add the cookie to container
@@ -44,6 +44,7 @@ Function downloadReplayBat($gameId){
         $Private:filename = $Private:response.Headers.item("Content-Disposition").split("`"")[1]
         $Private:content = [System.Text.Encoding]::UTF8.GetString($Private:response.Content)
         Out-File -FilePath ~\Desktop\$Private:filename -Encoding utf8 -InputObject $Private:content
+        Start-Process ~\Desktop\$Private:filename -Wait
     }
     
 }
@@ -55,37 +56,44 @@ Function queryPlayerGameId($playerName){
     $null = $response -match $pattern
     $gameId = $Matches[1]
     if($gameId){
-        writeHostInColor -message 'Player',$playerName,'Is Playing' -color Green
         downloadReplayBat($gameId)
     }
 }
 
 Function startPolling($playerList){
-    #while($true){
+    while($true){
         for($i = 0; $i -lt $playerList.Count; $i++){
             $playerName = $playerList[$i];
             $result = checkPlayingStatus($playerName)
             if($result -eq 1){
+                writeHostInColor -message $playerName,'正在游戏...' -color Green
                 queryPlayerGameId($playerName)
+            }else{
+                writeHostInColor -message $playerName,'不在游戏...' -color RED
             }
         }
-        writeHostInColor -message 'No Players Are Playing' -color Red
-        #Start-Sleep –s $global:interval
-    #}
+        Start-Sleep –s $global:config.interval
+    }
 }
 # hide the scroll bar
 $ProgressPreference='silentlycontinue'
 
-# 请在这里设置要订阅得选手账号 "选手账号" ， 请用 英文下得逗号"," 分割
-$global:subscribePlayerList = "wlstla2", "The shy"
-# 请在这里设置你LOL得目录，包含RADS文件夹得目录，替换双引号里面得内容即可
-$global:loldirectory = "F:\League of Legends"
-# 多久查询一遍，间隔过短会占用CPU
-$global:interval = 10
+Function initConfig(){
+    # get the config from current directory
+    # | ConvertFrom-Json
+    $private:configJson = Get-Content -Path '.\opmm.json'
+    # handle the escape character
+    $private:configJson = $private:configJson -replace '\\','/'
+    
+    Write-Host $private:configJson
+    $global:config = $private:configJson | ConvertFrom-Json
+}
+# init the config
+initConfig
 
-Write-Host "欢迎使用OPMM V0.1"
-Write-Host "当前订阅账号：" $global:subscribePlayerList
-write-host "当前LOL目录：" $global:loldirectory
-#Write-Host "查询间隔：" $global:interval
+Write-Host "欢迎使用OPMM V0.2"
+Write-Host "当前订阅账号：" $global:config.subscribePlayerList
+write-host "当前LOL目录：" $global:config.loldirectory
+Write-Host "查询间隔：" $global:config.interval
 Write-Host "如果您有任何问题或建议请您及时和我联系：codelevex@gmail.com"
-startPolling -playerList $subscribePlayerList
+startPolling -playerList $global:config.subscribePlayerList
