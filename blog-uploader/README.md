@@ -2,11 +2,11 @@
 
 由于hexo的源文件需要自己额外保存到github上，所以我专门建了一个文件夹用来存放md文件，然而每次重复的工作让我头皮发麻，而且不好管理：
 
-创建md文件 -> commit 并推送到 远程仓库 -> 复制修改过的md文件到hexo的_posts目录里 -> hexo c -> hexo g -> hexo d
+`创建md文件 -> commit 并推送到 远程仓库 -> 复制修改过的md文件到hexo的_posts目录里 -> hexo c -> hexo g -> hexo d`
 
 这个脚本就是我用来拯救自己的工具：
 
-创建md文件 -> commit 并推送到 远程仓库 -> 执行uploader
+`创建md文件 -> commit 并推送到 远程仓库 -> 执行uploader`
 
 因为commit里的消息还是很重要的，我选择自己手动推送，最后的步骤交给uploader
 
